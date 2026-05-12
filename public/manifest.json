@@ -1,0 +1,27 @@
+{
+  "name": "Podologia Milene",
+  "short_name": "Podologia",
+  "description": "Agendamento e acompanhamento de consultas de podologia.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d4738c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-light-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
