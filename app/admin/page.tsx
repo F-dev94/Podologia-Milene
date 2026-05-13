@@ -27,6 +27,8 @@ export default function AdminPage() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState("")
   const [canceladosParaAvisar, setCanceladosParaAvisar] = useState<Agendamento[]>([])
+  const [feedbacks, setFeedbacks] = useState<any[]>([])
+  const [carregandoFeedbacks, setCarregandoFeedbacks] = useState(false)
 
   async function buscarAgendamentos() {
     setCarregando(true)
@@ -118,6 +120,42 @@ export default function AdminPage() {
     window.open(urlWhatsapp, '_blank')
   }
 
+  async function buscarFeedbacks() {
+    setCarregandoFeedbacks(true)
+    try {
+      const res = await fetch("/api/feedbacks")
+      const json = await res.json()
+      if (json.sucesso) setFeedbacks(json.dados || [])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setCarregandoFeedbacks(false)
+    }
+  }
+
+  async function alternarAprovacaoFeedback(id: number, approved: boolean) {
+    try {
+      const res = await fetch("/api/feedbacks", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, approved })
+      })
+      if (res.ok) buscarFeedbacks()
+    } catch (e) {
+      alert("Erro ao atualizar feedback")
+    }
+  }
+
+  async function deletarFeedback(id: number) {
+    if (!confirm("Deletar este feedback permanentemente?")) return
+    try {
+      const res = await fetch(`/api/feedbacks?id=${id}`, { method: "DELETE" })
+      if (res.ok) buscarFeedbacks()
+    } catch (e) {
+      alert("Erro ao deletar feedback")
+    }
+  }
+
   useEffect(() => {
     async function verificarAcesso() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -132,6 +170,7 @@ export default function AdminPage() {
         return
       }
       buscarAgendamentos()
+      buscarFeedbacks()
     }
     verificarAcesso()
   }, [])
@@ -420,6 +459,52 @@ export default function AdminPage() {
             ))}
           </div>
         )}
+
+          </div>
+        )}
+
+        <hr className="my-16 border-slate-200" />
+
+        <h2 className="text-3xl font-serif font-bold text-slate-800 mb-6 flex items-center gap-3">
+          <MessageCircle className="h-8 w-8 text-amber-500" />
+          Gerenciar Avaliações de Clientes
+        </h2>
+
+        <div className="grid gap-6 mb-20">
+          {carregandoFeedbacks ? (
+             <div className="text-center p-10"><RefreshCw className="animate-spin inline mr-2" /> Carregando avaliações...</div>
+          ) : feedbacks.length === 0 ? (
+            <p className="text-slate-500 text-lg">Nenhuma avaliação recebida ainda.</p>
+          ) : (
+            feedbacks.map(f => (
+              <Card key={f.id} className={`border-none shadow-sm ${f.approved ? 'bg-white' : 'bg-amber-50 border-2 border-amber-200'}`}>
+                <CardContent className="p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                       <span className="font-bold text-slate-900">{f.pacientes?.name || "Cliente"}</span>
+                       <div className="flex text-amber-400">
+                          {Array.from({length: f.rating}).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
+                       </div>
+                    </div>
+                    <p className="text-slate-700 italic">"{f.comment}"</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={f.approved ? "outline" : "default"} 
+                      className={f.approved ? "" : "bg-amber-600 hover:bg-amber-700"}
+                      onClick={() => alternarAprovacaoFeedback(f.id, !f.approved)}
+                    >
+                      {f.approved ? "Ocultar do Site" : "Aprovar para o Site"}
+                    </Button>
+                    <Button variant="destructive" onClick={() => deletarFeedback(f.id)}>
+                      Excluir
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
 
       </div>
     </main>

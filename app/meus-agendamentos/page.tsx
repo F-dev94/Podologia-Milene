@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Loader2, CalendarDays, Search, Trash2 } from "lucide-react"
+import { Loader2, CalendarDays, Search, Trash2, Star, MessageSquare } from "lucide-react"
 
 interface Agendamento {
   id: number
@@ -25,6 +25,11 @@ export default function MeusAgendamentos() {
   const [loading, setLoading] = useState(false)
   const [buscou, setBuscou] = useState(false)
   const [usuarioLogado, setUsuarioLogado] = useState<any>(null)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<Agendamento | null>(null)
+  const [rating, setRating] = useState(5)
+  const [comment, setComment] = useState("")
+  const [sendingFeedback, setSendingFeedback] = useState(false)
 
   useEffect(() => {
     async function checarSessao() {
@@ -98,6 +103,43 @@ export default function MeusAgendamentos() {
     }
   }
 
+  async function enviarFeedback(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedAppointment || !usuarioLogado) return
+
+    setSendingFeedback(true)
+    try {
+      // Buscar o ID do paciente primeiro (ou usar um ID que já temos, mas a API de agendamentos retorna agendamentos, precisamos do patient_id)
+      // Vamos assumir que a API de agendamentos poderia retornar o patient_id ou buscamos por e-mail
+      const { data: paciente } = await supabase.from('pacientes').select('id').eq('email', usuarioLogado.email).single()
+      
+      if (!paciente) throw new Error("Paciente não encontrado")
+
+      const res = await fetch("/api/feedbacks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patient_id: paciente.id,
+          rating,
+          comment
+        })
+      })
+      const json = await res.json()
+      if (json.sucesso) {
+        alert("Obrigado pelo seu feedback! Ele será analisado pela Milene.")
+        setShowFeedbackModal(false)
+        setComment("")
+        setRating(5)
+      } else {
+        alert("Erro ao enviar feedback: " + json.mensagem)
+      }
+    } catch (e) {
+      alert("Erro ao enviar feedback.")
+    } finally {
+      setSendingFeedback(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 text-foreground">
       <Header />
@@ -160,34 +202,109 @@ export default function MeusAgendamentos() {
 
               {agendamentos.length === 0 ? (
                 <div className="text-center p-12 bg-white rounded-xl shadow-sm border border-slate-200">
-                  <p className="text-xl text-slate-500 font-medium">Nenhum agendamento encontrado para este número.</p>
+                  <p className="text-xl text-slate-500 font-medium">Nenhum agendamento encontrado.</p>
                 </div>
               ) : (
-                agendamentos.map(a => (
-                  <Card key={a.id} className="border-l-4 border-l-primary shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-                      <div className="space-y-2 text-center sm:text-left w-full sm:w-auto">
-                        <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary mb-1">
-                          {a.servico}
-                        </span>
-                        <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-2">
-                          <p className="text-2xl font-black text-slate-800 tracking-tight">{a.horario}</p>
-                          <p className="text-lg text-slate-500 font-medium">{new Date(a.data + "T12:00:00").toLocaleDateString('pt-BR')}</p>
+                agendamentos.map(a => {
+                  const isPast = new Date(a.data + "T23:59:59") < new Date()
+                  return (
+                    <Card key={a.id} className={`border-l-4 shadow-sm hover:shadow-md transition-shadow ${isPast ? 'border-l-slate-400 bg-slate-50' : 'border-l-primary'}`}>
+                      <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div className="space-y-2 text-center sm:text-left w-full sm:w-auto">
+                          <span className={`inline-flex rounded-full px-3 py-1 text-sm font-bold mb-1 ${isPast ? 'bg-slate-200 text-slate-600' : 'bg-primary/10 text-primary'}`}>
+                            {a.servico} {isPast && "(Concluído)"}
+                          </span>
+                          <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-2">
+                            <p className={`text-2xl font-black tracking-tight ${isPast ? 'text-slate-500' : 'text-slate-800'}`}>{a.horario}</p>
+                            <p className="text-lg text-slate-500 font-medium">{new Date(a.data + "T12:00:00").toLocaleDateString('pt-BR')}</p>
+                          </div>
                         </div>
-                      </div>
-
-                      <Button
-                        variant="destructive"
-                        size="lg"
-                        className="w-full sm:w-auto h-12 font-bold"
-                        onClick={() => cancelarAgendamento(a.id, a.data, a.horario, a.servico)}
-                      >
-                        <Trash2 className="mr-2 h-5 w-5" /> Cancelar Horário
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))
+                        
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          {isPast ? (
+                            <Button 
+                              variant="outline" 
+                              size="lg" 
+                              className="w-full sm:w-auto h-12 font-bold border-primary text-primary hover:bg-primary/10"
+                              onClick={() => {
+                                setSelectedAppointment(a)
+                                setShowFeedbackModal(true)
+                              }}
+                            >
+                              <Star className="mr-2 h-5 w-5" /> Avaliar Atendimento
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="destructive" 
+                              size="lg" 
+                              className="w-full sm:w-auto h-12 font-bold"
+                              onClick={() => cancelarAgendamento(a.id, a.data, a.horario, a.servico)}
+                            >
+                              <Trash2 className="mr-2 h-5 w-5" /> Cancelar Horário
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })
               )}
+            </div>
+          )}
+
+          {/* Modal de Feedback */}
+          {showFeedbackModal && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+              <Card className="w-full max-w-md border-none shadow-2xl animate-in zoom-in-95 duration-200">
+                <CardHeader className="bg-primary text-white rounded-t-xl relative">
+                  <button 
+                    onClick={() => setShowFeedbackModal(false)}
+                    className="absolute top-4 right-4 text-white/80 hover:text-white"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                  <CardTitle className="text-2xl font-serif">Sua Avaliação</CardTitle>
+                  <CardDescription className="text-white/80 mt-1">
+                    Como foi o serviço de <b>{selectedAppointment?.servico}</b>?
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <form onSubmit={enviarFeedback} className="space-y-6">
+                    <div className="space-y-3 text-center">
+                      <Label className="text-lg font-bold text-slate-800 block">Sua Nota</Label>
+                      <div className="flex justify-center gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setRating(star)}
+                            className={`p-1 transition-transform hover:scale-125 ${rating >= star ? 'text-amber-400' : 'text-slate-300'}`}
+                          >
+                            <Star className="h-10 w-10 fill-current" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <MessageSquare className="h-5 w-5 text-primary" /> Comentário
+                      </Label>
+                      <textarea
+                        required
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Conte como foi sua experiência..."
+                        className="w-full min-h-[120px] rounded-xl border border-slate-200 p-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+
+                    <Button type="submit" className="w-full h-14 text-xl font-bold" disabled={sendingFeedback}>
+                      {sendingFeedback ? <Loader2 className="h-6 w-6 animate-spin" /> : "ENVIAR AVALIAÇÃO"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>

@@ -8,6 +8,9 @@ import { Header } from "@/components/header"
 import { Hero } from "@/components/hero"
 import { Services } from "@/components/services"
 import { About } from "@/components/about"
+import { Gallery } from "@/components/gallery"
+import { Testimonials } from "@/components/testimonials"
+import { Location } from "@/components/location"
 import { Footer } from "@/components/footer"
 
 // Componentes da UI
@@ -261,6 +264,10 @@ export default function Home() {
             </Card>
           </div>
         </section>
+
+        <Gallery />
+        <Testimonials />
+        <Location />
       </main>
       <Footer />
     </div>

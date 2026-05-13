@@ -1,40 +1,70 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Star } from "lucide-react"
+"use client"
 
-const testimonials = [
-  { name: "Maria Silva", text: "Atendimento incrivel! A equipe e super atenciosa e o ambiente e muito acolhedor." },
-  { name: "Ana Oliveira", text: "Profissionais excelentes! Resolveram minha unha encravada rapidamente e sem dor." },
-  { name: "Juliana Santos", text: "Ja vejo resultado no tratamento de micose. Consultorio limpissimo. Nota 10!" },
-]
+import { useState, useEffect } from "react"
+import { Star, Quote } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+
+interface Feedback {
+  id: number
+  rating: number
+  comment: string
+  pacientes: { name: string }
+}
 
 export function Testimonials() {
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
+
+  useEffect(() => {
+    async function loadFeedbacks() {
+      try {
+        const res = await fetch("/api/feedbacks?approved=true")
+        const json = await res.json()
+        if (json.sucesso) {
+          setFeedbacks(json.dados || [])
+        }
+      } catch (e) {
+        console.error("Erro ao carregar feedbacks:", e)
+      }
+    }
+    loadFeedbacks()
+  }, [])
+
+  if (!feedbacks || feedbacks.length === 0) return null
+
   return (
-    <section className="py-20 md:py-28">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground uppercase tracking-wide">
-            Depoimentos
-          </span>
-          <h2 className="mt-4 font-serif text-3xl font-bold text-foreground md:text-4xl text-balance">
-            O que nossas clientes dizem
-          </h2>
+    <section id="depoimentos" className="py-24 bg-slate-900 text-white px-6 overflow-hidden">
+      <div className="mx-auto max-w-7xl">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">O que dizem nossos clientes</h2>
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto font-medium">
+            A satisfação de quem confia nos nossos cuidados é o nosso maior orgulho.
+          </p>
         </div>
 
-        <div className="mt-14 grid gap-6 grid-cols-1 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <Card key={t.name} className="border border-border">
-              <CardContent className="flex flex-col gap-4 p-6">
-                <div className="flex gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {feedbacks.map((f) => (
+            <Card key={f.id} className="bg-slate-800 border-none shadow-xl relative overflow-hidden group">
+              <Quote className="absolute -top-4 -right-4 h-24 w-24 text-white/5 transition-transform group-hover:scale-110" />
+              <CardContent className="p-8 relative z-10">
+                <div className="flex gap-1 mb-6">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star 
+                      key={s} 
+                      className={`h-5 w-5 ${f.rating >= s ? 'text-amber-400 fill-current' : 'text-slate-600'}`} 
+                    />
                   ))}
                 </div>
-                <p className="text-sm leading-relaxed text-muted-foreground italic">{`"${t.text}"`}</p>
-                <div className="mt-auto flex items-center gap-3 pt-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
-                    {t.name.split(" ").map((n) => n[0]).join("")}
+                <p className="text-lg text-slate-300 italic mb-8 leading-relaxed">
+                  "{f.comment}"
+                </p>
+                <div className="flex items-center gap-4 border-t border-slate-700 pt-6">
+                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl uppercase">
+                    {f.pacientes?.name?.charAt(0) || "C"}
                   </div>
-                  <p className="text-sm font-semibold text-foreground">{t.name}</p>
+                  <div>
+                    <h4 className="font-bold text-white text-lg">{f.pacientes?.name || "Cliente"}</h4>
+                    <p className="text-sm text-slate-500 uppercase tracking-widest text-xs">Cliente Verificado</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
