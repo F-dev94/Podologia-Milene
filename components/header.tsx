@@ -6,11 +6,11 @@ import { Menu, X, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navLinks = [
-  { label: "Inicio", href: "#inicio" },
-  { label: "Servicos", href: "#servicos" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Agendar", href: "#agendar" },
-  { label: "Contato", href: "#contato" },
+  { label: "Inicio", href: "/#inicio" },
+  { label: "Servicos", href: "/#servicos" },
+  { label: "Sobre", href: "/#sobre" },
+  { label: "Agendar", href: "/#agendar" },
+  { label: "Meus Agendamentos", href: "/meus-agendamentos" },
 ]
 
 export function Header() {

@@ -20,10 +20,13 @@ export function Footer() {
             <h3 className="font-serif text-lg font-semibold">Navegacao</h3>
             <nav className="flex flex-col gap-2">
               {["Inicio", "Servicos", "Sobre", "Agendar"].map((l) => (
-                <Link key={l} href={`#${l.toLowerCase()}`} className="text-sm opacity-70 hover:opacity-100 transition-opacity">
+                <Link key={l} href={`/#${l.toLowerCase()}`} className="text-sm opacity-70 hover:opacity-100 transition-opacity">
                   {l}
                 </Link>
               ))}
+              <Link href="/meus-agendamentos" className="text-sm font-bold text-primary opacity-90 hover:opacity-100 transition-opacity mt-2">
+                Meus Agendamentos
+              </Link>
             </nav>
           </div>
 

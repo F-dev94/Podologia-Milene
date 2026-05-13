@@ -9,9 +9,12 @@ export const dynamic = 'force-dynamic' // Garante que o Next.js não faça cache
 export const revalidate = 0
 
 // rota GET - buscar todos os agendamentos
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const { data: agendamentos, error } = await supabase
+    const { searchParams } = new URL(request.url)
+    const telefone = searchParams.get("telefone")
+
+    let query = supabase
       .from('agendamentos')
       .select(`
         id,
@@ -20,7 +23,7 @@ export async function GET() {
         service_name_snapshot,
         price,
         created_at,
-        pacientes (
+        pacientes!inner (
           name,
           phone,
           email
@@ -28,6 +31,15 @@ export async function GET() {
       `)
       .order('date', { ascending: false })
       .order('time', { ascending: false })
+
+    if (telefone) {
+      // Usar a relação com pacientes para filtrar
+      // Removemos todos os não-numéricos para garantir igualdade na busca
+      const telefoneLimpo = telefone.replace(/\D/g, "");
+      query = query.ilike('pacientes.phone', `%${telefoneLimpo}%`)
+    }
+
+    const { data: agendamentos, error } = await query;
 
     if (error) {
       console.error("Erro do Supabase:", error)

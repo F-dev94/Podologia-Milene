@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState("")
+  const [canceladosParaAvisar, setCanceladosParaAvisar] = useState<Agendamento[]>([])
 
   async function buscarAgendamentos() {
     setCarregando(true)
@@ -77,6 +78,46 @@ export default function AdminPage() {
     }
   }
 
+  async function cancelarDiaTodo(data: string) {
+    if (!data) return alert("Selecione uma data para cancelar.")
+    if (!confirm(`Tem certeza ABSOLUTA que deseja cancelar TODOS os agendamentos do dia ${data.split('-').reverse().join('/')}?`)) return
+    
+    const afetados = agendamentos.filter(a => a.data === data)
+    if (afetados.length === 0) return alert("Não há agendamentos nesta data.")
+
+    try {
+      setCarregando(true)
+      for (const ag of afetados) {
+        await fetch(`/api/agendamentos?id=${ag.id}`, { method: "DELETE" })
+      }
+      
+      setAgendamentos(agendamentos.filter(a => a.data !== data))
+      setCanceladosParaAvisar(afetados)
+      alert("Dia cancelado! Veja a lista de clientes para avisar que apareceu na tela.")
+    } catch {
+      alert("Erro ao tentar cancelar o dia.")
+    } finally {
+      setCarregando(false)
+    }
+  }
+
+  function gerarResumoDoDia() {
+    const hoje = new Date().toISOString().split("T")[0]
+    const agendamentosHoje = agendamentos.filter(a => a.data === hoje)
+    
+    if (agendamentosHoje.length === 0) {
+      return alert("Nenhum agendamento para hoje.")
+    }
+
+    let msg = `📅 *RESUMO DO DIA - ${new Date().toLocaleDateString("pt-BR")}*\n\n`
+    agendamentosHoje.forEach(a => {
+      msg += `⏰ *${a.horario}* - ${a.nome}\n👣 ${a.servico}\n📱 ${a.telefone}\n\n`
+    })
+    
+    const urlWhatsapp = `https://wa.me/?text=${encodeURIComponent(msg)}`
+    window.open(urlWhatsapp, '_blank')
+  }
+
   useEffect(() => {
     async function verificarAcesso() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -126,28 +167,35 @@ export default function AdminPage() {
         {/* Cartões Grandes de Resumo */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-10">
           <Card className="border-none shadow-lg">
-            <CardContent className="flex items-center gap-6 p-8">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-amber-100">
-                <CalendarDays className="h-10 w-10 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-xl text-muted-foreground font-medium">Total Marcados</p>
-                <p className="text-5xl font-extrabold text-foreground">{agendamentos.length}</p>
+            <CardContent className="flex items-center justify-between gap-6 p-8">
+              <div className="flex items-center gap-6">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-amber-100">
+                  <CalendarDays className="h-10 w-10 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xl text-muted-foreground font-medium">Total Marcados</p>
+                  <p className="text-5xl font-extrabold text-foreground">{agendamentos.length}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-none shadow-lg bg-green-50">
-            <CardContent className="flex items-center gap-6 p-8">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-green-200">
-                <Users className="h-10 w-10 text-green-700" />
+            <CardContent className="flex items-center justify-between gap-6 p-8">
+              <div className="flex items-center gap-6">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-green-200">
+                  <Users className="h-10 w-10 text-green-700" />
+                </div>
+                <div>
+                  <p className="text-xl text-green-800 font-medium">Atendimentos Hoje</p>
+                  <p className="text-5xl font-extrabold text-green-900">
+                    {agendamentos.filter((a) => a.data === new Date().toISOString().split("T")[0]).length}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xl text-green-800 font-medium">Atendimentos Hoje</p>
-                <p className="text-5xl font-extrabold text-green-900">
-                  {agendamentos.filter((a) => a.data === new Date().toISOString().split("T")[0]).length}
-                </p>
-              </div>
+              <Button onClick={gerarResumoDoDia} className="bg-green-600 hover:bg-green-700 text-white font-bold h-12">
+                <MessageCircle className="mr-2 h-5 w-5" /> Enviar Resumo
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -158,68 +206,135 @@ export default function AdminPage() {
           </div>
         )}
 
-        <Card className="border border-slate-200 shadow-sm mb-10 bg-slate-50">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-2xl font-serif flex items-center gap-2 text-slate-800">
-              <CalendarDays className="h-6 w-6 text-red-500" />
-              Bloquear Horário (Imprevisto)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              const d = (document.getElementById('blockDate') as HTMLInputElement).value;
-              const t = (document.getElementById('blockTime') as HTMLSelectElement).value;
-              if(!d || !t) return alert("Selecione data e hora");
-              
-              const res = await fetch("/api/agendamentos", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  nome: "BLOQUEADO (IMPREVISTO)",
-                  telefone: "00000000000",
-                  email: "admin@bloqueio.com",
-                  servico: "Bloqueio de Agenda",
-                  data: d,
-                  horario: t
-                })
-              });
-              if(res.ok) {
-                alert("Horário bloqueado com sucesso!");
-                buscarAgendamentos();
-              } else {
-                alert("Erro ao bloquear");
-              }
-            }} className="flex flex-wrap gap-4 items-end">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Data a bloquear</label>
-                <input id="blockDate" type="date" required className="flex h-12 w-full rounded-md border border-input bg-white px-3 py-2 text-sm" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+          <Card className="border border-slate-200 shadow-sm bg-slate-50">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-2xl font-serif flex items-center gap-2 text-slate-800">
+                <CalendarDays className="h-6 w-6 text-red-500" />
+                Bloquear Horário Único
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const d = (document.getElementById('blockDate') as HTMLInputElement).value;
+                const t = (document.getElementById('blockTime') as HTMLSelectElement).value;
+                if(!d || !t) return alert("Selecione data e hora");
+                
+                const res = await fetch("/api/agendamentos", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    nome: "BLOQUEADO (IMPREVISTO)",
+                    telefone: "00000000000",
+                    email: "admin@bloqueio.com",
+                    servico: "Bloqueio de Agenda",
+                    data: d,
+                    horario: t
+                  })
+                });
+                if(res.ok) {
+                  alert("Horário bloqueado com sucesso!");
+                  buscarAgendamentos();
+                } else {
+                  alert("Erro ao bloquear");
+                }
+              }} className="flex flex-col gap-4">
+                <div className="flex gap-4">
+                  <div className="space-y-2 flex-1">
+                    <label className="text-sm font-bold text-slate-700">Data</label>
+                    <input id="blockDate" type="date" required className="flex h-12 w-full rounded-md border border-input bg-white px-3 py-2 text-sm" />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <label className="text-sm font-bold text-slate-700">Horário</label>
+                    <select id="blockTime" required className="flex h-12 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
+                      <option value="">Selecione</option>
+                      <option value="07:00">07:00</option>
+                      <option value="08:00">08:00</option>
+                      <option value="09:00">09:00</option>
+                      <option value="10:00">10:00</option>
+                      <option value="11:00">11:00</option>
+                      <option value="12:00">12:00</option>
+                      <option value="13:00">13:00</option>
+                      <option value="14:00">14:00</option>
+                      <option value="15:00">15:00</option>
+                      <option value="16:00">16:00</option>
+                      <option value="17:00">17:00</option>
+                      <option value="18:00">18:00</option>
+                      <option value="19:00">19:00</option>
+                    </select>
+                  </div>
+                </div>
+                <Button type="submit" variant="destructive" size="lg" className="h-12 w-full">
+                  Bloquear Horário
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card className="border border-red-200 shadow-sm bg-red-50">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-2xl font-serif flex items-center gap-2 text-red-700">
+                <Trash2 className="h-6 w-6" />
+                Cancelar Dia Inteiro
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={e => {
+                e.preventDefault();
+                const d = (document.getElementById('cancelAllDate') as HTMLInputElement).value;
+                cancelarDiaTodo(d);
+              }} className="flex flex-col gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-red-900">Data a cancelar</label>
+                  <input id="cancelAllDate" type="date" required className="flex h-12 w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm" />
+                </div>
+                <Button type="submit" variant="destructive" size="lg" className="h-12 w-full mt-auto">
+                  Excluir Tudo Desse Dia
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        {canceladosParaAvisar.length > 0 && (
+          <Card className="border-2 border-red-500 shadow-xl mb-10 bg-white overflow-hidden">
+            <div className="bg-red-500 p-4 text-white">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <MessageCircle className="h-6 w-6" /> Avisar Clientes Cancelados
+              </h3>
+              <p className="text-red-100 mt-1">Clique nos botões abaixo para enviar mensagem no WhatsApp avisando sobre o cancelamento do dia.</p>
+            </div>
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4">
+                {canceladosParaAvisar.map(a => (
+                  <div key={a.id} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                    <div>
+                      <p className="font-bold text-slate-800 text-lg">{a.nome} <span className="text-slate-500 font-normal text-sm">({a.horario})</span></p>
+                      <p className="text-slate-600">{a.telefone}</p>
+                    </div>
+                    <Button asChild variant="default" className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto mt-4 sm:mt-0">
+                      <a 
+                        href={`https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá, ${a.nome}!\nInfelizmente tivemos um imprevisto e precisamos *CANCELAR* o seu agendamento de ${a.servico} que estava marcado para o dia ${a.data.split('-').reverse().join('/')} às ${a.horario}.\n\nPedimos desculpas pelo transtorno. Por favor, entre em contato para remarcarmos!`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <MessageCircle className="mr-2 h-4 w-4" /> Avisar {a.nome}
+                      </a>
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Horário a bloquear</label>
-                <select id="blockTime" required className="flex h-12 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
-                  <option value="">Selecione</option>
-                  <option value="07:00">07:00</option>
-                  <option value="08:00">08:00</option>
-                  <option value="09:00">09:00</option>
-                  <option value="10:00">10:00</option>
-                  <option value="11:00">11:00</option>
-                  <option value="12:00">12:00</option>
-                  <option value="13:00">13:00</option>
-                  <option value="14:00">14:00</option>
-                  <option value="15:00">15:00</option>
-                  <option value="16:00">16:00</option>
-                  <option value="17:00">17:00</option>
-                  <option value="18:00">18:00</option>
-                  <option value="19:00">19:00</option>
-                </select>
-              </div>
-              <Button type="submit" variant="destructive" size="lg" className="h-12">
-                Bloquear Horário
+              <Button 
+                variant="outline" 
+                className="w-full mt-6 h-12"
+                onClick={() => setCanceladosParaAvisar([])}
+              >
+                Ocultar esta lista
               </Button>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <h2 className="text-3xl font-serif font-bold text-slate-800 mb-6 flex items-center gap-3">
           <CalendarDays className="h-8 w-8 text-primary" />
