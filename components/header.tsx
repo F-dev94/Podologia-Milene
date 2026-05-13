@@ -19,11 +19,13 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
       <div className="mx-auto max-w-7xl flex items-center justify-between px-6 py-4">
-        <Link href="#inicio" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">P</span>
-          </div>
-          <span className="font-serif text-xl font-bold text-foreground overflow-hidden text-ellipsis whitespace-nowrap hidden sm:block">Milene Perpétua Da Silva Rodrigues</span>
+        <Link href="#inicio" className="flex items-center gap-3">
+          <img 
+            src="/images/Milena1.jpeg" 
+            alt="Logo Podologia Milene" 
+            className="h-10 w-10 rounded-full object-cover border-2 border-primary"
+          />
+          <span className="font-serif text-xl font-bold text-foreground overflow-hidden text-ellipsis whitespace-nowrap hidden sm:block">Milene Perpétua</span>
           <span className="font-serif text-xl font-bold text-foreground sm:hidden">Podologia Milene</span>
         </Link>
 

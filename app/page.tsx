@@ -128,7 +128,14 @@ export default function Home() {
 
       if (errorAgenda) throw errorAgenda
 
-      alert("✅ Agendamento enviado com sucesso!")
+      // Formatar a mensagem do WhatsApp
+      const dataFormatada = formData.data.split('-').reverse().join('/');
+      const mensagem = `Olá, Podologia Milene!\nGostaria de confirmar meu agendamento.\n\n*Nome:* ${formData.nome}\n*Serviço:* ${formData.servico}\n*Data:* ${dataFormatada}\n*Horário:* ${formData.horario}`;
+      const urlWhatsapp = `https://wa.me/551799767188?text=${encodeURIComponent(mensagem)}`;
+
+      alert("✅ Agendamento salvo! Você será redirecionado para o WhatsApp da clínica para confirmar.");
+      window.open(urlWhatsapp, '_blank');
+      
       setFormData({ nome: "", telefone: "", email: "", servico: "", data: "", horario: "" })
       
     } catch (error: any) {
@@ -158,16 +165,17 @@ export default function Home() {
               <CardContent className="p-8 bg-white">
                 <form onSubmit={handleAgendamento} className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Nome Completo</Label>
+                    <Label className="text-lg font-bold text-slate-900">Nome Completo</Label>
                     <Input 
                       placeholder="Seu nome"
                       value={formData.nome}
                       onChange={e => setFormData({...formData, nome: e.target.value})}
                       required 
+                      className="h-14 text-lg border-slate-400"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Telefone / WhatsApp</Label>
+                    <Label className="text-lg font-bold text-slate-900">Telefone / WhatsApp</Label>
                     <Input 
                       placeholder="(17) 99999-9999"
                       value={formData.telefone}
@@ -180,22 +188,24 @@ export default function Home() {
                       }}
                       required 
                       maxLength={15}
+                      className="h-14 text-lg border-slate-400"
                     />
                   </div>
                   <div className="md:col-span-2 space-y-2">
-                    <Label>E-mail</Label>
+                    <Label className="text-lg font-bold text-slate-900">E-mail</Label>
                     <Input 
                       type="email"
                       placeholder="seu@email.com"
                       value={formData.email}
                       onChange={e => setFormData({...formData, email: e.target.value})}
                       required 
+                      className="h-14 text-lg border-slate-400"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Tratamento</Label>
+                    <Label className="text-lg font-bold text-slate-900">Tratamento</Label>
                     <Select onValueChange={v => setFormData({...formData, servico: v})} required>
-                      <SelectTrigger><SelectValue placeholder="O que você precisa?" /></SelectTrigger>
+                      <SelectTrigger className="h-14 text-lg border-slate-400 text-slate-900 font-medium"><SelectValue placeholder="O que você precisa?" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Mão">Mão (R$ 35)</SelectItem>
                         <SelectItem value="Pé">Pé (R$ 40)</SelectItem>
@@ -212,26 +222,26 @@ export default function Home() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Data</Label>
+                      <Label className="text-lg font-bold text-slate-900">Data</Label>
                       <Input 
                         type="date" 
                         min={getToday()}
                         value={formData.data} 
                         onChange={e => setFormData({...formData, data: e.target.value, horario: ""})} 
-                        className={diaInteiroFechado ? "border-red-500 bg-red-50 text-red-700" : ""}
+                        className={`h-14 text-lg border-slate-400 font-medium ${diaInteiroFechado ? "border-red-500 bg-red-50 text-red-700" : ""}`}
                         required 
                       />
                       {diaInteiroFechado && <p className="text-xs text-red-600 font-bold mt-1">Dia totalmente lotado</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label>Hora</Label>
+                      <Label className="text-lg font-bold text-slate-900">Hora</Label>
                       <Select 
                         value={formData.horario} 
                         onValueChange={v => setFormData({...formData, horario: v})} 
                         required
                         disabled={diaInteiroFechado}
                       >
-                        <SelectTrigger className={diaInteiroFechado ? "bg-slate-100" : ""}><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className={`h-14 text-lg font-bold border-slate-400 text-slate-900 ${diaInteiroFechado ? "bg-slate-100" : ""}`}><SelectValue placeholder="Selecione" /></SelectTrigger>
                         <SelectContent className="max-h-[300px]">
                           {todosHorariosDisponiveis.map(hora => (
                              <SelectItem key={hora} value={hora} disabled={horariosOcupados.includes(hora)}>
@@ -243,8 +253,8 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <Button type="submit" className="md:col-span-2 h-14 text-lg font-bold" disabled={loading}>
-                    {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "CONFIRMAR AGENDAMENTO"}
+                  <Button type="submit" className="md:col-span-2 h-16 text-xl font-bold bg-primary hover:bg-primary/90 text-white" disabled={loading}>
+                    {loading ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : "CONFIRMAR AGENDAMENTO"}
                   </Button>
                 </form>
               </CardContent>

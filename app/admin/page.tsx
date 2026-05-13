@@ -47,6 +47,7 @@ export default function AdminPage() {
   }
 
   async function deletarAgendamento(id: number) {
+    const agendamento = agendamentos.find(a => a.id === id);
     if (!confirm("Tem certeza que quer cancelar esse agendamento? Ele será excluído para sempre.")) return
 
     try {
@@ -55,7 +56,19 @@ export default function AdminPage() {
 
       if (dados.sucesso) {
         setAgendamentos(agendamentos.filter((a) => a.id !== id))
-        alert("Atendimento cancelado com sucesso!")
+        
+        if (agendamento && agendamento.telefone) {
+          const dataFormatada = agendamento.data.split('-').reverse().join('/');
+          const mensagem = `Olá, ${agendamento.nome}!\nInfelizmente tivemos um imprevisto e precisamos *CANCELAR* o seu agendamento de ${agendamento.servico} do dia ${dataFormatada} às ${agendamento.horario}.\n\nPor favor, entre em contato para remarcarmos!`;
+          const numeroLimpo = agendamento.telefone.replace(/\D/g, "");
+          const urlWhatsapp = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+          
+          if (confirm("Agendamento cancelado! Deseja enviar uma mensagem avisando o cliente no WhatsApp agora?")) {
+            window.open(urlWhatsapp, '_blank');
+          }
+        } else {
+          alert("Atendimento cancelado com sucesso!");
+        }
       } else {
         alert(dados.mensagem || "Erro ao cancelar")
       }
@@ -268,11 +281,12 @@ export default function AdminPage() {
                       className="w-full md:w-auto h-14 text-base font-bold bg-green-600 hover:bg-green-700 text-white"
                     >
                       <a 
-                        href={`https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${a.nome}, tudo bem? Aqui é da Podologia Milene. Recebemos seu pedido de agendamento para o dia ${new Date(a.data + "T12:00:00").toLocaleDateString("pt-BR")} às ${a.horario}. Podemos confirmar?`)}`}
+                        href={`https://wa.me/55${a.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá, ${a.nome}! Tudo bem?\n\nAqui é da Clínica *Podologia Milene*. Estou entrando em contato para *CONFIRMAR* seu agendamento:\n\n👣 Serviço: ${a.servico}\n📅 Data: ${new Date(a.data + "T12:00:00").toLocaleDateString("pt-BR")}\n⏰ Hora: ${a.horario}\n\nPodemos confirmar sua presença?`)}`}
                         target="_blank" 
                         rel="noopener noreferrer"
+                        className="flex items-center justify-center w-full"
                       >
-                        <MessageCircle className="mr-2 h-5 w-5" /> Confirmar via WhatsApp
+                        <MessageCircle className="mr-2 h-6 w-6" /> <span className="text-lg">Confirmar via WhatsApp</span>
                       </a>
                     </Button>
 
