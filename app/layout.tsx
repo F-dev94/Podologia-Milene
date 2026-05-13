@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Playfair_Display, Lato } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { PwaPrompt } from '@/components/pwa-prompt'
 import './globals.css'
 
 const playfair = Playfair_Display({
@@ -55,6 +56,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${playfair.variable} ${lato.variable} font-sans antialiased`}>
         {children}
+        <PwaPrompt />
         <Analytics />
         <script
           dangerouslySetInnerHTML={{

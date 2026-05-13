@@ -13,6 +13,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const telefone = searchParams.get("telefone")
+    const email = searchParams.get("email")
 
     let query = supabase
       .from('agendamentos')
@@ -33,10 +34,12 @@ export async function GET(request: Request) {
       .order('time', { ascending: false })
 
     if (telefone) {
-      // Usar a relação com pacientes para filtrar
-      // Removemos todos os não-numéricos para garantir igualdade na busca
       const telefoneLimpo = telefone.replace(/\D/g, "");
       query = query.ilike('pacientes.phone', `%${telefoneLimpo}%`)
+    }
+    
+    if (email) {
+      query = query.eq('pacientes.email', email)
     }
 
     const { data: agendamentos, error } = await query;

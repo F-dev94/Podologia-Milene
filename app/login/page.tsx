@@ -44,7 +44,7 @@ export default function LoginPage() {
       if (adminEmails.includes(data.user.email || "")) {
         router.push("/admin")
       } else {
-        router.push("/") // Convidados vão para a home
+        router.push("/meus-agendamentos") // Convidados vão para seu painel
       }
     }
   }

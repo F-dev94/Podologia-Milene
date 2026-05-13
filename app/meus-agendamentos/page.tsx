@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { supabase } from "@/app/lib/supabaseCliente"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,34 @@ export default function MeusAgendamentos() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
   const [loading, setLoading] = useState(false)
   const [buscou, setBuscou] = useState(false)
+  const [usuarioLogado, setUsuarioLogado] = useState<any>(null)
+
+  useEffect(() => {
+    async function checarSessao() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUsuarioLogado(session.user)
+        await carregarPorEmail(session.user.email!)
+      }
+    }
+    checarSessao()
+  }, [])
+
+  async function carregarPorEmail(email: string) {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/agendamentos?email=${email}`)
+      const json = await res.json()
+      if (json.sucesso) {
+        setAgendamentos(json.dados)
+        setBuscou(true)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function buscarAgendamentos(e: React.FormEvent) {
     e.preventDefault()
@@ -57,7 +86,7 @@ export default function MeusAgendamentos() {
     try {
       const res = await fetch(`/api/agendamentos?id=${id}`, { method: "DELETE" })
       const json = await res.json()
-      
+
       if (json.sucesso) {
         setAgendamentos(agendamentos.filter(a => a.id !== id))
         alert("✅ Agendamento cancelado com sucesso. A vaga já foi liberada no site.")
@@ -77,43 +106,58 @@ export default function MeusAgendamentos() {
           <Card className="border-none shadow-xl mb-8">
             <CardHeader className="bg-primary text-white rounded-t-xl text-center">
               <CardTitle className="text-3xl font-serif">Meus Agendamentos</CardTitle>
-              <CardDescription className="text-white/80 mt-2 text-lg">
-                Digite seu telefone/WhatsApp para ver e gerenciar seus horários.
-              </CardDescription>
+              {usuarioLogado ? (
+                <CardDescription className="text-white/80 mt-2 text-lg">
+                  Bem-vindo, <b>{usuarioLogado.email}</b>. Abaixo estão seus horários.
+                </CardDescription>
+              ) : (
+                <CardDescription className="text-white/80 mt-2 text-lg">
+                  Digite seu telefone/WhatsApp para ver e gerenciar seus horários.
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent className="p-8">
-              <form onSubmit={buscarAgendamentos} className="flex flex-col sm:flex-row gap-4 items-end">
-                <div className="flex-1 space-y-2 w-full">
-                  <Label className="text-lg font-bold text-slate-800">Seu Celular / WhatsApp</Label>
-                  <Input 
-                    placeholder="(17) 99999-9999"
-                    value={telefone}
-                    onChange={e => {
-                      let v = e.target.value.replace(/\D/g, "");
-                      if (v.length > 11) v = v.substring(0, 11);
-                      if (v.length > 2) v = `(${v.substring(0, 2)}) ${v.substring(2)}`;
-                      if (v.length > 10) v = `${v.substring(0, 10)}-${v.substring(10)}`;
-                      setTelefone(v);
-                    }}
-                    required 
-                    maxLength={15}
-                    className="h-14 text-xl font-medium border-slate-300"
-                  />
+              {!usuarioLogado && (
+                <form onSubmit={buscarAgendamentos} className="flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex-1 space-y-2 w-full">
+                    <Label className="text-lg font-bold text-slate-800">Seu Celular / WhatsApp</Label>
+                    <Input
+                      placeholder="(17) 99999-9999"
+                      value={telefone}
+                      onChange={e => {
+                        let v = e.target.value.replace(/\D/g, "");
+                        if (v.length > 11) v = v.substring(0, 11);
+                        if (v.length > 2) v = `(${v.substring(0, 2)}) ${v.substring(2)}`;
+                        if (v.length > 10) v = `${v.substring(0, 10)}-${v.substring(10)}`;
+                        setTelefone(v);
+                      }}
+                      required
+                      maxLength={15}
+                      className="h-14 text-xl font-medium border-slate-300"
+                    />
+                  </div>
+                  <Button type="submit" className="h-14 px-8 text-lg font-bold w-full sm:w-auto" disabled={loading}>
+                    {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <><Search className="mr-2" /> Buscar</>}
+                  </Button>
+                </form>
+              )}
+              {usuarioLogado && (
+                <div className="text-center">
+                   <Button variant="outline" onClick={() => supabase.auth.signOut().then(() => window.location.reload())}>
+                     Sair da Conta
+                   </Button>
                 </div>
-                <Button type="submit" className="h-14 px-8 text-lg font-bold w-full sm:w-auto" disabled={loading}>
-                  {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <><Search className="mr-2" /> Buscar</>}
-                </Button>
-              </form>
+              )}
             </CardContent>
           </Card>
 
           {buscou && (
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <CalendarDays className="text-primary" /> 
+                <CalendarDays className="text-primary" />
                 Seus Horários ({agendamentos.length})
               </h3>
-              
+
               {agendamentos.length === 0 ? (
                 <div className="text-center p-12 bg-white rounded-xl shadow-sm border border-slate-200">
                   <p className="text-xl text-slate-500 font-medium">Nenhum agendamento encontrado para este número.</p>
@@ -131,10 +175,10 @@ export default function MeusAgendamentos() {
                           <p className="text-lg text-slate-500 font-medium">{new Date(a.data + "T12:00:00").toLocaleDateString('pt-BR')}</p>
                         </div>
                       </div>
-                      
-                      <Button 
-                        variant="destructive" 
-                        size="lg" 
+
+                      <Button
+                        variant="destructive"
+                        size="lg"
                         className="w-full sm:w-auto h-12 font-bold"
                         onClick={() => cancelarAgendamento(a.id, a.data, a.horario, a.servico)}
                       >
