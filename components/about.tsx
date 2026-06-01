@@ -6,7 +6,7 @@ const highlights = [
   "Ambiente esterilizado e seguro",
   "Equipamentos modernos",
   "Atendimento humanizado",
-  "Mais de 10 anos de experiencia",
+  "Mais de 21 anos de experiencia",
   "Precos acessiveis",
 ]
 
@@ -26,7 +26,7 @@ export function About() {
               />
             </div>
             <div className="absolute -bottom-4 -right-4 rounded-xl bg-primary p-6 text-primary-foreground shadow-lg">
-              <p className="text-3xl font-bold font-serif">10+</p>
+              <p className="text-3xl font-bold font-serif">21+</p>
               <p className="text-sm opacity-90">Anos de experiencia</p>
             </div>
           </div>

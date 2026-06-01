@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react"
 
 const stats = [
   { value: "500+", label: "Clientes atendidos" },
-  { value: "10+", label: "Anos de experiencia" },
+  { value: "21+", label: "Anos de experiencia" },
   { value: "98%", label: "Satisfacao" },
 ]
 

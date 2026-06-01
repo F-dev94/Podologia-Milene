@@ -163,7 +163,7 @@ export default function AdminPage() {
         window.location.href = "/login"
         return
       }
-      const adminEmails = ["joaorubens601@gmail.com", "millenepupio@gmail.com"]
+      const adminEmails = ["joaorubens601@gmail.com", "millenepupio1@gmail.com"]
       if (!adminEmails.includes(user.email || "")) {
         alert("Acesso negado. Apenas administradores podem acessar esta página.")
         window.location.href = "/" // Redireciona para a página principal (convidado)
@@ -457,9 +457,6 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        )}
-
           </div>
         )}
 

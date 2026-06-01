@@ -18,7 +18,7 @@ const lato = Lato({
 })
 
 export const metadata: Metadata = {
-  title: 'Podologia Clinic - Cuidado Especializado para seus Pes',
+  title: 'Podologia Milene - Cuidado Especializado para seus Pés',
   description: 'Agende sua consulta de podologia com profissionais especializados. Tratamentos para unhas, calos, micoses e muito mais.',
   manifest: '/manifest.json',
   icons: {
@@ -34,6 +34,16 @@ export const metadata: Metadata = {
       {
         url: '/icon.svg',
         type: 'image/svg+xml',
+      },
+      {
+        url: '/icon-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        url: '/icon-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
       },
     ],
     apple: '/apple-icon.png',

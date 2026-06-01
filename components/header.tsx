@@ -38,9 +38,9 @@ export function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link href="tel:+551799767188" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors pr-2 border-r">
+          <Link href="tel:+5517997617188" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors pr-2 border-r">
             <Phone className="h-4 w-4" />
-            (17) 9976-7188
+            (17) 99761-7188
           </Link>
           <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary transition-colors px-2">
             Entrar

@@ -12,7 +12,7 @@ export function Footer() {
               <Image src="/images/Milena2.jpeg" alt="Logomarca Milene Podóloga" width={160} height={160} className="object-contain bg-white rounded-xl p-2" />
             </div>
             <p className="text-sm leading-relaxed opacity-70">
-              Cuidando da saude dos seus pes com carinho e profissionalismo ha mais de 10 anos.
+              Cuidando da saude dos seus pes com carinho e profissionalismo ha mais de 21 anos.
             </p>
           </div>
 
@@ -39,11 +39,11 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 shrink-0 opacity-70" />
-                <Link href="tel:+551799767188" className="text-sm opacity-70 hover:opacity-100 transition-opacity">(17) 9976-7188</Link>
+                <Link href="tel:+5517997617188" className="text-sm opacity-70 hover:opacity-100 transition-opacity">(17) 99761-7188</Link>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 shrink-0 opacity-70" />
-                <Link href="mailto:contato@podologiamilene.com" className="text-sm opacity-70 hover:opacity-100 transition-opacity">contato@podologiamilene.com</Link>
+                <Link href="mailto:millenepupio1@gmail.com" className="text-sm opacity-70 hover:opacity-100 transition-opacity">millenepupio1@gmail.com</Link>
               </div>
               <div className="flex items-center gap-3">
                 <Instagram className="h-4 w-4 shrink-0 opacity-70" />

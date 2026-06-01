@@ -40,7 +40,7 @@ export default function LoginPage() {
     }
 
     if (data.user) {
-      const adminEmails = ["joaorubens601@gmail.com", "millenepupio@gmail.com"]
+      const adminEmails = ["joaorubens601@gmail.com", "millenepupio1@gmail.com"]
       if (adminEmails.includes(data.user.email || "")) {
         router.push("/admin")
       } else {

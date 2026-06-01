@@ -134,7 +134,7 @@ export default function Home() {
       // Formatar a mensagem do WhatsApp
       const dataFormatada = formData.data.split('-').reverse().join('/');
       const mensagem = `Olá, Podologia Milene!\nGostaria de confirmar meu agendamento.\n\n*Nome:* ${formData.nome}\n*Serviço:* ${formData.servico}\n*Data:* ${dataFormatada}\n*Horário:* ${formData.horario}`;
-      const urlWhatsapp = `https://wa.me/551799767188?text=${encodeURIComponent(mensagem)}`;
+      const urlWhatsapp = `https://wa.me/5517997617188?text=${encodeURIComponent(mensagem)}`;
 
       alert("✅ Agendamento salvo! Você será redirecionado para o WhatsApp da clínica para confirmar.");
       window.open(urlWhatsapp, '_blank');
