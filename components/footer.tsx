@@ -12,14 +12,14 @@ export function Footer() {
               <Image src="/images/Milena2.jpeg" alt="Logomarca Milene Podóloga" width={160} height={160} className="object-contain bg-white rounded-xl p-2" />
             </div>
             <p className="text-sm leading-relaxed opacity-70">
-              Cuidando da saude dos seus pes com carinho e profissionalismo ha mais de 21 anos.
+              Cuidando da saúde dos seus pés com carinho e profissionalismo há mais de 21 anos.
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
-            <h3 className="font-serif text-lg font-semibold">Navegacao</h3>
+            <h3 className="font-serif text-lg font-semibold">Navegação</h3>
             <nav className="flex flex-col gap-2">
-              {["Inicio", "Servicos", "Sobre", "Agendar"].map((l) => (
+              {["Início", "Serviços", "Sobre", "Agendar"].map((l) => (
                 <Link key={l} href={`/#${l.toLowerCase()}`} className="text-sm opacity-70 hover:opacity-100 transition-opacity">
                   {l}
                 </Link>
@@ -53,7 +53,7 @@ export function Footer() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <h3 className="font-serif text-lg font-semibold">Horarios</h3>
+            <h3 className="font-serif text-lg font-semibold">Horários</h3>
             <div className="flex flex-col gap-2">
               {[
                 { label: "Seg - Sáb: 07:00 - 11:00 | 12:00 - 19:00" },

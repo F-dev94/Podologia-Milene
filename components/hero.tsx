@@ -5,8 +5,8 @@ import { ArrowRight } from "lucide-react"
 
 const stats = [
   { value: "500+", label: "Clientes atendidos" },
-  { value: "21+", label: "Anos de experiencia" },
-  { value: "98%", label: "Satisfacao" },
+  { value: "21+", label: "Anos de experiência" },
+  { value: "98%", label: "Satisfação" },
 ]
 
 export function Hero() {
@@ -18,10 +18,10 @@ export function Hero() {
             Cuidado profissional
           </span>
           <h1 className="font-serif text-4xl font-bold leading-tight text-foreground md:text-5xl lg:text-6xl text-balance">
-            Seus pes merecem cuidado especializado
+            Seus pés merecem cuidado especializado
           </h1>
           <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-            Oferecemos tratamentos podologicos de excelencia com profissionais qualificados. Agende sua consulta e cuide da saude dos seus pes.
+            Oferecemos tratamentos podológicos de excelência com profissionais qualificados. Agende sua consulta e cuide da saúde dos seus pés.
           </p>
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <Button size="lg" asChild>
@@ -30,7 +30,7 @@ export function Hero() {
               </Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <Link href="#servicos">Nossos Servicos</Link>
+              <Link href="#servicos">Nossos Serviços</Link>
             </Button>
           </div>
           <div className="flex items-center gap-8 pt-4">

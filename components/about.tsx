@@ -6,8 +6,8 @@ const highlights = [
   "Ambiente esterilizado e seguro",
   "Equipamentos modernos",
   "Atendimento humanizado",
-  "Mais de 21 anos de experiencia",
-  "Precos acessiveis",
+  "Mais de 21 anos de experiência",
+  "Preços acessíveis",
 ]
 
 export function About() {
@@ -27,19 +27,19 @@ export function About() {
             </div>
             <div className="absolute -bottom-4 -right-4 rounded-xl bg-primary p-6 text-primary-foreground shadow-lg">
               <p className="text-3xl font-bold font-serif">21+</p>
-              <p className="text-sm opacity-90">Anos de experiencia</p>
+              <p className="text-sm opacity-90">Anos de experiência</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-6">
             <span className="w-fit rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground uppercase tracking-wide">
-              Sobre Nos
+              Sobre Nós
             </span>
             <h2 className="font-serif text-3xl font-bold text-foreground md:text-4xl text-balance">
-              Dedicados ao cuidado dos seus pes
+              Dedicados ao cuidado dos seus pés
             </h2>
             <p className="text-lg leading-relaxed text-muted-foreground">
-              Nossa clinica e referencia em tratamentos especializados, com profissionais qualificados e um ambiente moderno e acolhedor.
+              Nossa clínica é referência em tratamentos especializados, com profissionais qualificados e um ambiente moderno e acolhedor.
             </p>
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
               {highlights.map((item) => (
